@@ -1,3 +1,6 @@
+
+"use client"
+
 import {
   Card,
   CardContent,
@@ -10,6 +13,8 @@ import ActivityTable from './components/activity-table';
 import { activities } from "@/lib/data";
 
 export default function DashboardPage() {
+  // Note: The stats below are based on the initial static data and won't update with inline edits.
+  // For a real app, you'd lift state or refetch data.
   const totalFunding = activities.reduce((sum, act) => sum + act.fundingAmountUSD, 0);
   const ongoingActivities = activities.filter(act => !['Completed', 'Cancelled', 'Draft'].includes(act.status)).length;
   const completedActivities = activities.filter(act => act.status === 'Completed').length;
@@ -53,7 +58,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle>All Activities</CardTitle>
           <CardDescription>
-            A comprehensive list of all marketing development fund activities.
+            A comprehensive list of all marketing development fund activities. Admins can edit rows inline.
           </CardDescription>
         </CardHeader>
         <CardContent>
