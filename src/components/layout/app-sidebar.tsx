@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from 'next/navigation';
@@ -10,7 +11,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -28,6 +28,7 @@ import {
 import Link from 'next/link';
 import { useRole } from '@/context/RoleContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -76,8 +77,8 @@ export default function AppSidebar() {
           {(role === 'Admin' || role === 'Marketing Ops') && (
             <SidebarGroup>
                <Collapsible defaultOpen={lookupTablesOpen}>
-                <CollapsibleTrigger className='w-full'>
-                    <SidebarMenuButton className='justify-between group'>
+                <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className='justify-between group w-full'>
                         <div className='flex items-center gap-2'>
                             <Book />
                             <span>Lookup Tables</span>
