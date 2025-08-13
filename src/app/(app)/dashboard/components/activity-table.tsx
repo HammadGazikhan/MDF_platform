@@ -13,21 +13,23 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { activities as initialActivities } from "@/lib/data";
 import { Activity, ActivityStatus } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { ListFilter, Search, PlusCircle, X, Save, Ban } from "lucide-react";
+import { ListFilter, Search, PlusCircle, X, Save, Ban, FilterIcon } from "lucide-react";
 import { useRole } from "@/context/RoleContext";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const statusOptions: ActivityStatus[] = [
   "Draft",
@@ -61,7 +63,7 @@ const filterOperators = [
     { value: 'ends_with', label: 'ends with' },
 ];
 
-type Filter = {
+export type Filter = {
   id: string;
   column: string;
   operator: string;
@@ -75,7 +77,10 @@ export default function ActivityTable() {
   
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Filter[]>([]);
+  const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
+  const [tempFilters, setTempFilters] = useState<Filter[]>([]);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -83,22 +88,36 @@ export default function ActivityTable() {
   const [editedData, setEditedData] = useState<Partial<Activity> | null>(null);
 
   useEffect(() => {
-    // Reset editing state if role changes
     setEditingRowId(null);
     setEditedData(null);
   }, [role]);
+  
+  useEffect(() => {
+      setTempFilters(activeFilters);
+  }, [isFilterDialogOpen]);
 
   const addFilter = () => {
-    setFilters([...filters, { id: crypto.randomUUID(), column: 'nameOfActivity', operator: 'contains', value: '' }]);
+    setTempFilters([...tempFilters, { id: crypto.randomUUID(), column: 'nameOfActivity', operator: 'contains', value: '' }]);
   };
 
   const removeFilter = (id: string) => {
-    setFilters(filters.filter(f => f.id !== id));
+    setTempFilters(tempFilters.filter(f => f.id !== id));
   };
+  
+  const clearFilters = () => {
+    setActiveFilters([]);
+    setTempFilters([]);
+    setIsFilterDialogOpen(false);
+  }
 
   const updateFilter = (id: string, newFilter: Partial<Filter>) => {
-    setFilters(filters.map(f => f.id === id ? { ...f, ...newFilter } : f));
+    setTempFilters(tempFilters.map(f => f.id === id ? { ...f, ...newFilter } : f));
   };
+  
+  const applyFilters = () => {
+      setActiveFilters(tempFilters);
+      setIsFilterDialogOpen(false);
+  }
 
   const handleEdit = (activity: Activity) => {
     if (!isAdmin) return;
@@ -138,10 +157,10 @@ export default function ActivityTable() {
         : true
     );
 
-    if (filters.length > 0) {
+    if (activeFilters.length > 0) {
         filtered = filtered.filter(activity => {
-            return filters.every(filter => {
-                if (!filter.column || !filter.operator) return true;
+            return activeFilters.every(filter => {
+                if (!filter.column || !filter.operator || !filter.value) return true;
                 
                 const activityValue = activity[filter.column as keyof Activity];
                 const filterValue = filter.value;
@@ -153,10 +172,10 @@ export default function ActivityTable() {
                     case '!=': return activityValueStr !== filterValueStr;
                     case 'contains': return activityValueStr.includes(filterValueStr);
                     case 'not_contains': return !activityValueStr.includes(filterValueStr);
-                    case '>': return activityValue > filterValue;
-                    case '<': return activityValue < filterValue;
-                    case '>=': return activityValue >= filterValue;
-                    case '<=': return activityValue <= filterValue;
+                    case '>': return Number(activityValue) > Number(filterValue);
+                    case '<': return Number(activityValue) < Number(filterValue);
+                    case '>=': return Number(activityValue) >= Number(filterValue);
+                    case '<=': return Number(activityValue) <= Number(filterValue);
                     case 'starts_with': return activityValueStr.startsWith(filterValueStr);
                     case 'ends_with': return activityValueStr.endsWith(filterValueStr);
                     default: return true;
@@ -168,7 +187,7 @@ export default function ActivityTable() {
     return filtered.sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-  }, [search, filters, activities]);
+  }, [search, activeFilters, activities]);
 
   const paginatedActivities = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -233,27 +252,36 @@ export default function ActivityTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search by name or ID..."
-              className="w-full pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" onClick={addFilter}>
-            <PlusCircle className="mr-2" />
-            Add Filter
-          </Button>
+      <div className="flex flex-col md:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search by name or ID..."
+            className="w-full pl-8"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-        {filters.length > 0 && (
-            <div className="space-y-2 p-4 border rounded-lg bg-muted/50">
-                <h4 className="text-sm font-medium">Filters</h4>
-                {filters.map((filter, index) => (
+        <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="relative">
+              <FilterIcon className="mr-2" />
+              Filter
+              {activeFilters.length > 0 && (
+                <Badge className="absolute -top-2 -right-2 px-2">{activeFilters.length}</Badge>
+              )}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+              <DialogTitle>Filter Activities</DialogTitle>
+              <DialogDescription>
+                Add and manage filters to refine the activity list. Click apply when you&apos;re done.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                {tempFilters.map((filter) => (
                     <div key={filter.id} className="flex items-center gap-2">
                         <Select value={filter.column} onValueChange={(v) => updateFilter(filter.id, { column: v })}>
                             <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
@@ -278,8 +306,18 @@ export default function ActivityTable() {
                         </Button>
                     </div>
                 ))}
+                <Button variant="outline" size="sm" onClick={addFilter}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Filter
+                </Button>
             </div>
-        )}
+            <DialogFooter>
+                {activeFilters.length > 0 && <Button variant="ghost" onClick={clearFilters}>Clear All Filters</Button>}
+                <Button variant="outline" onClick={() => setIsFilterDialogOpen(false)}>Cancel</Button>
+                <Button onClick={applyFilters}>Apply Filters</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
 
 
@@ -314,8 +352,8 @@ export default function ActivityTable() {
                         <TableCell>
                             {editingRowId === activity.id ? (
                                 <div className="flex gap-2">
-                                    <Button size="icon" variant="outline" className="h-8 w-8" onClick={handleSaveEdit}><Save className="h-4 w-4"/></Button>
-                                    <Button size="icon" variant="outline" className="h-8 w-8" onClick={handleCancelEdit}><Ban className="h-4 w-4"/></Button>
+                                    <Button size="icon" variant="outline" className="h-8 w-8" onClick={(e) => {e.stopPropagation(); handleSaveEdit()}}><Save className="h-4 w-4"/></Button>
+                                    <Button size="icon" variant="outline" className="h-8 w-8" onClick={(e) => {e.stopPropagation(); handleCancelEdit()}}><Ban className="h-4 w-4"/></Button>
                                 </div>
                             ) : (
                                 <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(activity); }}>Edit</Button>

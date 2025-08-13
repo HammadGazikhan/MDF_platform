@@ -16,20 +16,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { HardHat, LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon } from "lucide-react";
 import { useRole } from "@/context/RoleContext";
 import { useRouter } from "next/navigation";
+import { Breadcrumbs } from "./breadcrumbs";
+import { usePage } from "@/context/PageContext";
 
 export default function AppHeader() {
   const { user, role, setRole, availableUsers } = useRole();
+  const { pageTitle } = usePage();
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
+    <header className="sticky top-0 z-10 flex h-24 items-center gap-4 border-b bg-card px-4 md:px-6">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="md:hidden" />
-        <HardHat className="h-6 w-6 text-primary" />
-        <h1 className="text-lg font-semibold">MDF Platform</h1>
+        <div className="flex flex-col">
+            <h1 className="text-2xl font-semibold">{pageTitle}</h1>
+            <Breadcrumbs />
+        </div>
       </div>
       
       <div className="ml-auto flex items-center gap-4">

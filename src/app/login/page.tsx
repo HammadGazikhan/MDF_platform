@@ -37,7 +37,7 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full bg-accent hover:bg-accent/90">Login</Button>
+            <Button type="submit" className="w-full">Login</Button>
           </CardFooter>
         </form>
       </Card>

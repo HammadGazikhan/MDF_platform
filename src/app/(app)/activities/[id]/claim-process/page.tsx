@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/layout/back-button";
 import {
   Card,
   CardContent,
@@ -13,32 +14,38 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function ClaimProcessPage({ params }: { params: { id:string } }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Claim Process</CardTitle>
-        <CardDescription>
-          Submit claim for activity <span className="font-bold">{params.id}</span>.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="claimAmount">Claim Amount (USD)</Label>
-          <Input id="claimAmount" type="number" placeholder="Enter amount to be claimed" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="pop">Proof of Performance (POP)</Label>
-          <Input id="pop" type="file" />
-          <p className="text-xs text-muted-foreground">Upload documents, reports, or images as proof of activity execution.</p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="notes">Claim Notes</Label>
-          <Textarea id="notes" placeholder="Add any notes for the finance team." />
-        </div>
-      </CardContent>
-      <CardFooter className="justify-end gap-2">
-        <Button variant="outline">Save Claim Draft</Button>
-        <Button className="bg-accent hover:bg-accent/90">Submit Claim</Button>
-      </CardFooter>
-    </Card>
+    <>
+      <div className="flex items-center gap-4 mb-6">
+        <BackButton />
+        <h1 className="text-2xl font-semibold">Claim Process</h1>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Claim Process</CardTitle>
+          <CardDescription>
+            Submit claim for activity <span className="font-bold">{params.id}</span>.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="claimAmount">Claim Amount (USD)</Label>
+            <Input id="claimAmount" type="number" placeholder="Enter amount to be claimed" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pop">Proof of Performance (POP)</Label>
+            <Input id="pop" type="file" />
+            <p className="text-xs text-muted-foreground">Upload documents, reports, or images as proof of activity execution.</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Claim Notes</Label>
+            <Textarea id="notes" placeholder="Add any notes for the finance team." />
+          </div>
+        </CardContent>
+        <CardFooter className="justify-end gap-2">
+          <Button variant="outline">Save Claim Draft</Button>
+          <Button>Submit Claim</Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

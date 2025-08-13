@@ -256,7 +256,7 @@ export default function CreateActivityPage() {
                              <Button type="button" variant="outline" onClick={() => form.reset()}>
                                 Reset
                             </Button>
-                            <Button type="submit" className="bg-accent hover:bg-accent/90">Save as Draft</Button>
+                            <Button type="submit">Save as Draft</Button>
                         </div>
                     </form>
                 </Form>

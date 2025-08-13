@@ -47,10 +47,10 @@ export default function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-            <HardHat className="h-8 w-8 text-sidebar-primary" />
+            <HardHat className="h-8 w-8 text-primary" />
             <div className="flex flex-col">
-                <h2 className="text-lg font-semibold text-sidebar-foreground">Westcon</h2>
-                <p className="text-xs text-sidebar-foreground/80">MDF Platform</p>
+                <h2 className="text-lg font-semibold text-sidebar-foreground">MDF Platform</h2>
+                <p className="text-xs text-sidebar-foreground/80">by Westcon</p>
             </div>
         </div>
       </SidebarHeader>
