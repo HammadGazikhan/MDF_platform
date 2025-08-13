@@ -29,6 +29,7 @@ import Link from 'next/link';
 import { useRole } from '@/context/RoleContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -43,6 +44,8 @@ export default function AppSidebar() {
     '/lookup/vendor-quarter',
     '/lookup/country-approver'
   ].some(p => isActive(p));
+  
+  const [isLookupOpen, setIsLookupOpen] = React.useState(lookupTablesOpen);
 
   return (
     <Sidebar>
@@ -76,17 +79,17 @@ export default function AppSidebar() {
           
           {(role === 'Admin' || role === 'Marketing Ops') && (
             <SidebarGroup>
-               <Collapsible defaultOpen={lookupTablesOpen}>
+               <Collapsible open={isLookupOpen} onOpenChange={setIsLookupOpen}>
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton className='justify-between group w-full'>
                         <div className='flex items-center gap-2'>
                             <Book />
                             <span>Lookup Tables</span>
                         </div>
-                        <ChevronDown className='h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180' />
+                        <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', isLookupOpen && 'rotate-180')} />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
-                <CollapsibleContent className='py-2 pl-4'>
+                <CollapsibleContent className='py-2 pl-4 data-[state=closed]:hidden'>
                     <SidebarMenu>
                          <SidebarMenuItem>
                             <Link href="/lookup/vendors" passHref><SidebarMenuButton size="sm" isActive={isActive('/lookup/vendors')}><Warehouse /><span>Vendors</span></SidebarMenuButton></Link>
